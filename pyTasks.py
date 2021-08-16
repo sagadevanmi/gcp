@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.7
 from google.cloud import storage
+from google.cloud import bigquery
 from io import StringIO
 import pandas as pd
 
@@ -42,3 +43,39 @@ blob2.upload_from_filename('04-03-2019.csv')
 blob3.upload_from_filename('05-03-2019.csv')
 blob4.upload_from_filename('06-03-2019.csv')
 
+client = bigquery.Client()
+project = client.project
+dataset_ref = bigquery.DatasetReference(project, 'group3')
+table_ref = dataset_ref.table("processed-dataset-group3")
+schema = [
+    bigquery.SchemaField("visitor_device_key", "INTEGER"),
+    bigquery.SchemaField("visitor_device_Id", "STRING"),
+    bigquery.SchemaField("location_key", "INTEGER"),
+    bigquery.SchemaField("visit_dwell_time", "INTEGER"),
+    bigquery.SchemaField("dma_code", "INTEGER"),
+    bigquery.SchemaField("dma", "STRING"),
+    bigquery.SchemaField("zip_code", "INTEGER"),
+    bigquery.SchemaField("state", "STRING"),
+    bigquery.SchemaField("timezone", "STRING"),
+    bigquery.SchemaField("brand", "STRING"),
+    bigquery.SchemaField("category", "STRING"),
+    bigquery.SchemaField("unix_timestamp_local", "INTEGER"),
+    bigquery.SchemaField("unix_timestamp_utc", "INTEGER"),
+    bigquery.SchemaField("date_local", "DATE"),
+    bigquery.SchemaField("timestamp_local_converted", "DATE")
+    bigquery.SchemaField("timestamp_utc_converted", "DATE")
+]
+table = bigquery.Table(table_ref, schema=schema)
+table.time_partitioning = bigquery.TimePartitioning(
+    type_=bigquery.TimePartitioningType.DAY,
+    field="date_local",  # name of column to use for partitioning
+    expiration_ms=7776000000,
+)  # 90 days
+
+table = client.create_table(table)
+
+print(
+    "Created table {}, partitioned on column {}".format(
+        table.table_id, table.time_partitioning.field
+    )
+)
