@@ -29,7 +29,7 @@ df = pd.read_csv('Final_Assignment_Dataset_DE-2021-Batch1-GCP-Final-Assignment-D
 for i in set(df['date_local']):
     df.loc[df['date_local'] == i].to_csv(f"{i}.csv",index=False)
 
-bucket = client.get_bucket('raw-dataset-group3')
+bucket = client.get_bucket('processed-dataset-group3')
 blob = bucket.blob('02-03-2019.csv')
 blob1 = bucket.blob('03-03-2019.csv')
 blob2 = bucket.blob('04-03-2019.csv')
